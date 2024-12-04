@@ -11,7 +11,7 @@ abstract class BaseExportPresenter implements ExportPresenterInterface
     $cleanHtml = $this->cleanHtml($data);
 
     $cleanHtml['url'] = $currentUrl ?? 'URL não definida';
-    $cleanHtml['exported_at'] = date('d-m-Y H:i:s');
+    $cleanHtml['data'] = date('d-m-Y H:i:s');
 
     return $this->convertToFormat($cleanHtml);
   }
