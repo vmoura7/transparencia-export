@@ -1,0 +1,17 @@
+transparencia_export.export:
+  path: '/transparencia/export/{format}'
+  defaults:
+    _controller: '\Drupal\transparencia_export\Controller\ExportController::export'
+    _title: 'Exportar Página'
+  requirements:
+    format: '[a-z]+'
+    _permission: 'access content'  # Ajuste conforme necessário
+
+
+transparencia_export.settings:
+  path: '/admin/config/services/transparencia-export'
+  defaults:
+    _form: '\Drupal\transparencia_export\Form\TransparenciaExportBlockSettingsForm'
+    _title: 'Transparência Export Block Settings'
+  requirements:
+    _permission: 'administer site configuration'

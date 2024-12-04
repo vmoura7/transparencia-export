@@ -1,0 +1,12 @@
+export_block:
+  version: 1.x
+  css:
+    component:
+      css/export.css: {}
+  js:
+    js/export.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/drupalSettings
+    - core/drupal.once

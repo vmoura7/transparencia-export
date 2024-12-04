@@ -1,0 +1,10 @@
+{
+    "name": "drupal/transparencia_export",
+    "description": "Módulo para exportação de conteúdo em JSON, XML e PDF.",
+    "type": "drupal-module",
+    "require": {
+        "mpdf/mpdf": "^8.2",
+        "symfony/dom-crawler": "^6.0",
+        "symfony/css-selector": "^6.0"
+    }
+}

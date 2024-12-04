@@ -1,0 +1,7 @@
+name: 'Transparência Export'
+type: module
+description: 'Adiciona um bloco que permite a exportação do conteúdo do nó em diversos formatos, incluindo JSON, XML e PDF, através de ícones interativos renderizados pelo block criado.'
+core_version_requirement: ^10
+package: 3tecnos
+dependencies:
+  - drupal:block

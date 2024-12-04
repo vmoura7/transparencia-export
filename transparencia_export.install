@@ -1,0 +1,71 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for the Transparencia Export Block module.
+ */
+
+use Drupal\Core\Database\Database;
+use Drupal\Core\File\FileSystemInterface;
+
+/**
+ * Implements hook_install().
+ */
+function transparencia_export_install()
+{
+  // Verifica se as dependências necessárias estão instaladas.
+  $missing_dependencies = [];
+
+  if (!class_exists('Symfony\Component\DomCrawler\Crawler')) {
+    $missing_dependencies[] = 'symfony/dom-crawler';
+  }
+  if (!class_exists('Symfony\Component\CssSelector\CssSelectorConverter')) {
+    $missing_dependencies[] = 'symfony/css-selector';
+  }
+
+  if (!empty($missing_dependencies)) {
+    $dependencies_list = implode(', ', $missing_dependencies);
+    \Drupal::messenger()->addError(t('The following Composer dependencies are missing: @dependencies. Please install them using Composer before using this module.', [
+      '@dependencies' => $dependencies_list,
+    ]));
+    return;
+  }
+
+  // Diretório temporário do mPDF.
+  $temp_dir = \Drupal::service('file_system')->getTempDirectory() . '/mpdf';
+
+  // Crie o diretório, se não existir.
+  if (!file_exists($temp_dir)) {
+    mkdir($temp_dir, 0755, TRUE);
+  }
+
+  // Ajusta as permissões.
+  chmod($temp_dir, 0755);
+
+  // Valida se o diretório está acessível.
+  if (!is_writable($temp_dir)) {
+    throw new \RuntimeException(t('The temporary directory for mPDF is not writable: @dir', ['@dir' => $temp_dir]));
+  }
+
+  // Criação da tabela para armazenar os caminhos excluídos.
+  $schema = [
+    'description' => 'Stores excluded paths for the Transparência Export.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'The primary identifier for the excluded path.',
+      ],
+      'path' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'The path to exclude from the block.',
+      ],
+    ],
+    'primary key' => ['id'],
+  ];
+
+  // Executa a criação da tabela.
+  \Drupal::database()->schema()->createTable('transparencia_export_excluded_paths', $schema);
+}

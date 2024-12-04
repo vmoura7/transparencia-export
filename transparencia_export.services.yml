@@ -1,0 +1,28 @@
+services:
+  transparencia_export.export_node_decorator:
+    class: Drupal\transparencia_export\Decorator\ExportNodeDecorator
+    arguments: ["@entity_type.manager"]
+
+  transparencia_export.excluded_paths_repository:
+    class: Drupal\transparencia_export\Repository\ExcludedPathsRepository
+    public: true
+
+  transparencia_export.settings_form:
+    class: Drupal\transparencia_export\Form\TransparenciaExportBlockSettingsForm
+    tags:
+      - { name: form, form_id: transparencia_export_settings }
+
+  transparencia_export.export_presenter_factory:
+    class: Drupal\transparencia_export\Factory\ExportPresenterFactory
+    public: true
+
+  transparencia_export.export_controller:
+    class: Drupal\transparencia_export\Controller\ExportController
+    arguments:
+      - '@renderer'
+      - '@session'
+      - '@transparencia_export.export_presenter_factory'
+      - '@logger.factory'
+      - '@request_stack'
+      - '@http_client'
+    public: true

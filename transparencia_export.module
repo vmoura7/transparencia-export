@@ -1,0 +1,25 @@
+<?php
+
+/**
+ * @file
+ * Arquivo principal para o módulo Transparência Export Block.
+ *
+ * Use este arquivo para implementar hooks específicos do Drupal,
+ * como alter hooks, event subscribers ou outras integrações globais.
+ */
+
+/**
+ * Implements hook_help().
+ *
+ * Adiciona informações de ajuda para o módulo.
+ */
+function transparencia_export_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $route_match)
+{
+  switch ($route_name) {
+    case 'help.page.transparencia_export':
+      return '<p>' . t('O módulo Transparência Export Block permite exportar conteúdo em formatos JSON, XML e PDF.') . '</p>' .
+        '<p>' . t('Configure o módulo em <a href=":url">Configurações do Transparência Export Block</a>.', [
+          ':url' => \Drupal\Core\Url::fromRoute('transparencia_export.settings')->toString(),
+        ]) . '</p>';
+  }
+}
