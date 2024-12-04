@@ -12,12 +12,9 @@ class JsonExportPresenter extends BaseExportPresenter
 
   protected function convertToFormat(array $data): string
   {
-    if (isset($data['url'])) {
-      $data['url'] = str_replace('\/', '/', $data['url']);
-    }
-
-    return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    return json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
   }
+
 
   public function getMimeType(): string
   {
