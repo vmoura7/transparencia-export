@@ -3,70 +3,38 @@
 namespace Drupal\transparencia_export\Presenter;
 
 use Symfony\Component\DomCrawler\Crawler;
-use Symfony\Component\CssSelector\CssSelectorConverter;
 
 abstract class BaseExportPresenter implements ExportPresenterInterface
 {
-  /**
-   * Formata o HTML renderizado para exportação.
-   *
-   * @param string $html
-   *   HTML renderizado.
-   *
-   * @return string
-   *   Dados formatados.
-   */
-  public function format($html): string
+  public function format($data, ?string $currentUrl = null): string
   {
-    $cleanHtml = $this->cleanHtml($html);
+    $cleanHtml = $this->cleanHtml($data);
+
+    $cleanHtml['url'] = $currentUrl ?? 'URL não definida';
+    $cleanHtml['exported_at'] = date('d-m-Y H:i:s');
+
     return $this->convertToFormat($cleanHtml);
   }
 
-  /**
-   * Limpa o HTML removendo elementos desnecessários.
-   *
-   * @param string $html
-   *   HTML a ser limpo.
-   *
-   * @return string
-   *   HTML limpo.
-   */
-  protected function cleanHtml(string $html): string
+  protected function cleanHtml(string $html): array
   {
-    $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+    $crawler = new Crawler($html);
 
-    // Remove elementos desnecessários com XPath.
-    $crawler->filterXpath('//header|//footer|//script|//style')->each(function ($node) {
+    $crawler->filterXpath('//header|//footer|//script|//style|//comment()')->each(function ($node) {
       $node->getNode(0)->parentNode->removeChild($node->getNode(0));
     });
 
-    // Usar seletores CSS para capturar conteúdo específico.
-    $converter = new CssSelectorConverter();
-    $selector = $converter->toXPath('.view-content'); // Exemplo de classe CSS.
+    $titleNode = $crawler->filter('.page-title, .title');
+    $title = $titleNode->count() ? trim($titleNode->text()) : 'Título não encontrado';
 
-    $viewContent = $crawler->filterXpath($selector);
+    $contentNode = $crawler->filter('.node__content, .gavias-builder--content');
+    $content = $contentNode->count() ? trim($contentNode->text()) : 'Conteúdo não encontrado';
 
-    if ($viewContent->count() > 0) {
-      $textContent = $viewContent->text(); // Extrair o conteúdo específico.
-    } else {
-      // Padrão: extrair texto do body.
-      $textContent = $crawler->filterXpath('//body')->text();
-    }
-
-    // Limpar espaços extras.
-    $cleanedContent = preg_replace('/\s+/', ' ', $textContent);
-    return trim($cleanedContent);
+    return [
+      'titulo' => $title,
+      'texto' => $content,
+    ];
   }
 
-
-  /**
-   * Converte o HTML para o formato desejado (implementado em subclasses).
-   *
-   * @param string $html
-   *   HTML a ser convertido.
-   *
-   * @return string
-   *   HTML no formato desejado.
-   */
-  abstract protected function convertToFormat(string $html): string;
+  abstract protected function convertToFormat(array $data): string;
 }
