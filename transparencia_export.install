@@ -69,3 +69,12 @@ function transparencia_export_install()
   // Executa a criação da tabela.
   \Drupal::database()->schema()->createTable('transparencia_export_excluded_paths', $schema);
 }
+
+/**
+ * Implements hook_uninstall().
+ */
+function transparencia_export_block_uninstall()
+{
+  // Remove a tabela na desinstalação do módulo.
+  \Drupal::database()->schema()->dropTable('transparencia_export_block_excluded_paths');
+}

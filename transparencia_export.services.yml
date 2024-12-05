@@ -1,8 +1,4 @@
 services:
-  transparencia_export.export_node_decorator:
-    class: Drupal\transparencia_export\Decorator\ExportNodeDecorator
-    arguments: ["@entity_type.manager"]
-
   transparencia_export.excluded_paths_repository:
     class: Drupal\transparencia_export\Repository\ExcludedPathsRepository
     public: true

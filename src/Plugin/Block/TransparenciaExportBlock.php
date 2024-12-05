@@ -5,6 +5,7 @@ namespace Drupal\transparencia_export\Plugin\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\transparencia_export\Repository\ExcludedPathsRepository;
 
 /**
  * Provides a 'Transparência Export Block' block.
@@ -16,27 +17,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class TransparenciaExportBlock extends BlockBase implements ContainerFactoryPluginInterface
 {
-  /**
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
+  protected $excludedPathsRepository;
 
-  /**
-   * Constructs a new TransparenciaExportBlock.
-   *
-   * @param array $configuration
-   *   Configuration array.
-   * @param string $plugin_id
-   *   The plugin ID.
-   * @param mixed $plugin_definition
-   *   The plugin definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager service.
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, $entity_type_manager)
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ExcludedPathsRepository $excludedPathsRepository)
   {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->entityTypeManager = $entity_type_manager;
+    $this->excludedPathsRepository = $excludedPathsRepository;
   }
 
   /**
@@ -60,7 +46,7 @@ class TransparenciaExportBlock extends BlockBase implements ContainerFactoryPlug
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('entity_type.manager')
+      $container->get('transparencia_export.excluded_paths_repository') // Corrigido aqui
     );
   }
 
@@ -69,7 +55,7 @@ class TransparenciaExportBlock extends BlockBase implements ContainerFactoryPlug
    */
   public function build()
   {
-    $module_path = \Drupal::service('extension.list.module')->getPath('transparencia_export_block');
+    $module_path = \Drupal::service('extension.list.module')->getPath('transparencia_export');
     $file_url_generator = \Drupal::service('file_url_generator');
 
     // Gerar URLs para os ícones.
@@ -78,20 +64,29 @@ class TransparenciaExportBlock extends BlockBase implements ContainerFactoryPlug
     $pdf_icon_url = $file_url_generator->generateAbsoluteString($module_path . '/images/pdf-icon.svg');
     $print_icon_url = $file_url_generator->generateAbsoluteString($module_path . '/images/print-icon.svg');
 
-    // Botões de exportação.
-    $buttons = [
-      'json' => $json_icon_url,
-      'xml' => $xml_icon_url,
-      'pdf' => $pdf_icon_url,
-      'print' => $print_icon_url,
-    ];
+    // Obter a URL atual
+    $current_path = \Drupal::service('path.current')->getPath();
+    $current_route_name = \Drupal::service('path_alias.manager')->getAliasByPath($current_path);
 
-    $rendered_buttons = '';
-    foreach ($buttons as $format => $icon_url) {
-      $rendered_buttons .= '
+    // Aqui, você pode acessar os caminhos excluídos através do repositório.
+    $excluded_paths = $this->excludedPathsRepository->getExcludedPaths();
+
+    if (!in_array($current_route_name, $excluded_paths)) {
+      // Botões de exportação.
+      $buttons = [
+        'json' => $json_icon_url,
+        'xml' => $xml_icon_url,
+        'pdf' => $pdf_icon_url,
+        'print' => $print_icon_url,
+      ];
+
+      $rendered_buttons = '';
+      foreach ($buttons as $format => $icon_url) {
+        $rendered_buttons .= '
         <div id="export-' . $format . '-button" class="export-button">
           <img src="' . $icon_url . '" alt="Exportar ' . strtoupper($format) . '" height="24" width="24" />
         </div>';
+      }
     }
 
     return [
