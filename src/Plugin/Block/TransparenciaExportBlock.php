@@ -55,7 +55,7 @@ class TransparenciaExportBlock extends BlockBase implements ContainerFactoryPlug
    */
   public function build()
   {
-    $module_path = \Drupal::service('extension.list.module')->getPath('transparencia_export');
+    $module_path = \Drupal::service('extension.list.module')->getPath('transparencia_export_block');
     $file_url_generator = \Drupal::service('file_url_generator');
 
     // Gerar URLs para os ícones.
@@ -71,6 +71,9 @@ class TransparenciaExportBlock extends BlockBase implements ContainerFactoryPlug
     // Aqui, você pode acessar os caminhos excluídos através do repositório.
     $excluded_paths = $this->excludedPathsRepository->getExcludedPaths();
 
+    // Inicializar $rendered_buttons como string vazia.
+    $rendered_buttons = '';
+
     if (!in_array($current_route_name, $excluded_paths)) {
       // Botões de exportação.
       $buttons = [
@@ -80,12 +83,11 @@ class TransparenciaExportBlock extends BlockBase implements ContainerFactoryPlug
         'print' => $print_icon_url,
       ];
 
-      $rendered_buttons = '';
       foreach ($buttons as $format => $icon_url) {
         $rendered_buttons .= '
-        <div id="export-' . $format . '-button" class="export-button">
-          <img src="' . $icon_url . '" alt="Exportar ' . strtoupper($format) . '" height="24" width="24" />
-        </div>';
+      <div id="export-' . $format . '-button" class="export-button">
+        <img src="' . $icon_url . '" alt="Exportar ' . strtoupper($format) . '" height="24" width="24" />
+      </div>';
       }
     }
 
