@@ -6,6 +6,17 @@ use Symfony\Component\DomCrawler\Crawler;
 
 abstract class BaseExportPresenter implements ExportPresenterInterface
 {
+  protected array $config;
+
+  public function __construct(array $config = [])
+  {
+    // Configurações padrão podem ser sobrescritas pelas passadas no construtor.
+    $this->config = array_merge([
+      'remove_elements' => '//header|//footer|//script|//style|//comment()',
+      'block_selectors' => '#block-gavias-nonid-quicksideabout, .block-block-content',
+    ], $config);
+  }
+
   protected function filterEmptyFields(array $data): array
   {
     return array_filter($data, function ($value) {
@@ -15,67 +26,113 @@ abstract class BaseExportPresenter implements ExportPresenterInterface
 
   public function format($data, ?string $currentUrl = null): string
   {
-    $cleanHtml = $this->cleanHtml($data);
+    $cleanHtml = $this->processHtml($data);
 
     $cleanHtml['url'] = $currentUrl ?? 'URL não definida';
     $cleanHtml['data'] = date('d-m-Y H:i:s');
 
-    $cleanHtml = $this->filterEmptyFields($cleanHtml);
-
-    return $this->convertToFormat($cleanHtml);
+    return $this->convertToFormat($this->filterEmptyFields($cleanHtml));
   }
 
-
-  protected function cleanHtml(string $html): array
+  protected function processHtml(string $html): array
   {
     $crawler = new Crawler($html);
+    $this->removeUnwantedElements($crawler);
 
-    $crawler->filterXpath('//header|//footer|//script|//style|//comment()')->each(function ($node) {
+    $title = $this->extractTitle($crawler);
+    $tables = $this->extractTables($crawler);
+    $subtitlesAndContents = $this->extractSubtitlesAndContents($crawler, $tables['texts']);
+    $mainContent = $this->extractMainContent($crawler, $tables['texts'], !empty($subtitlesAndContents));
+
+    return [
+      'titulo' => $title,
+      'texto' => $mainContent,
+      'subtitulos' => $subtitlesAndContents,
+      'tabelas' => $tables['data'] ?? null,
+    ];
+  }
+
+  protected function removeUnwantedElements(Crawler $crawler): void
+  {
+    // Remover elementos genéricos (configuráveis).
+    $crawler->filterXpath($this->config['remove_elements'])->each(function ($node) {
       $node->getNode(0)->parentNode->removeChild($node->getNode(0));
     });
 
-    $filteredHtml = $crawler->html(); // Captura o HTML filtrado
-    \Drupal::logger('transparencia_export')->debug('HTML totalmente filtrado: <pre>@html</pre>', ['@html' => $filteredHtml]);
-
-    $crawler->filter('.pager, .pagination, .views-pagination')->each(function ($node) {
+    // Remover blocos específicos (configuráveis).
+    $crawler->filter($this->config['block_selectors'])->each(function ($node) {
       $node->getNode(0)->parentNode->removeChild($node->getNode(0));
     });
 
+    \Drupal::logger('transparencia_export')->debug('HTML após remoção de elementos indesejados.');
+  }
+
+  protected function extractTitle(Crawler $crawler): string
+  {
     $titleNode = $crawler->filter('.page-title, .title');
-    $title = $titleNode->count() ? trim($titleNode->text()) : 'Título não encontrado';
+    return $titleNode->count() ? trim($titleNode->text()) : 'Título não encontrado';
+  }
 
+  protected function extractTables(Crawler $crawler): array
+  {
     $tables = [];
-    $crawler->filter('table')->each(function ($tableNode) use (&$tables) {
+    $tableTexts = [];
+
+    $crawler->filter('table')->each(function ($tableNode) use (&$tables, &$tableTexts) {
       $table = [];
-      $tableNode->filter('tr')->each(function ($rowNode) use (&$table) {
+      $tableNode->filter('tr')->each(function ($rowNode) use (&$table, &$tableTexts) {
         $row = [];
-        $rowNode->filter('th, td')->each(function ($cellNode) use (&$row) {
-          $row[] = trim($cellNode->text());
+        $rowNode->filter('th, td')->each(function ($cellNode) use (&$row, &$tableTexts) {
+          $cellText = trim($cellNode->text());
+          $row[] = $cellText;
+          $tableTexts[] = $cellText; // Coletar todos os textos da tabela
         });
         $table[] = $row;
       });
       $tables[] = $table;
     });
 
-    $contentNode = $crawler->filter('.node__content, .gavias-builder--content, .views-element-container, .view-page');
-    $content = $contentNode->count() ? trim($contentNode->text()) : 'Conteúdo não encontrado';
+    return ['data' => $tables, 'texts' => $tableTexts];
+  }
 
-    if (!empty($tables)) {
-      foreach ($tables as $table) {
-        foreach ($table as $row) {
-          foreach ($row as $cell) {
-            $content = str_replace($cell, '', $content);
-          }
-        }
+  protected function extractSubtitlesAndContents(Crawler $crawler, array $tableTexts): array
+  {
+    $subtitlesAndContents = [];
+    $currentSubtitle = null;
+
+    $crawler->filter('h1, h2, h3, h4, h5, h6, p')->each(function (Crawler $node) use (&$subtitlesAndContents, &$currentSubtitle, $tableTexts) {
+      $tagName = $node->nodeName();
+      $text = trim($node->text());
+
+      if (in_array($text, $tableTexts, true)) {
+        return; // Ignore texts already present in tables.
       }
-      $content = preg_replace('/\s+/', ' ', $content);
+
+      if (preg_match('/^h[1-6]$/', $tagName)) {
+        $currentSubtitle = $text;
+        $subtitlesAndContents[] = ['subtitulo' => $currentSubtitle, 'conteudo' => ''];
+      } elseif ($currentSubtitle && $tagName === 'p') {
+        $index = count($subtitlesAndContents) - 1;
+        $subtitlesAndContents[$index]['conteudo'] .= ($subtitlesAndContents[$index]['conteudo'] ? ' ' : '') . $text;
+      }
+    });
+
+    return array_filter($subtitlesAndContents, fn($item) => !empty(trim($item['conteudo'])));
+  }
+
+  protected function extractMainContent(Crawler $crawler, array $tableTexts, bool $hasSubtitles): ?string
+  {
+    $contentNode = $crawler->filter('.node__content, .gavias-builder--content, .views-element-container, .view-page');
+    $mainContent = $contentNode->count() ? trim($contentNode->text()) : null;
+
+    if ($mainContent) {
+      foreach ($tableTexts as $tableText) {
+        $mainContent = str_replace($tableText, '', $mainContent);
+      }
+      $mainContent = preg_replace('/\s+/', ' ', $mainContent);
     }
 
-    return [
-      'titulo' => $title,
-      'texto' => trim($content),
-      'tabelas' => $tables,
-    ];
+    return $hasSubtitles ? null : $mainContent; // Only include main content if there are no subtitles.
   }
 
   abstract protected function convertToFormat(array $data): string;

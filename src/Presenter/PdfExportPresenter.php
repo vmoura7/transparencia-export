@@ -22,6 +22,10 @@ class PdfExportPresenter extends BaseExportPresenter
                     padding-bottom: 10px;
                     margin-bottom: 20px;
                 }
+                h2 {
+                    color: #34495E;
+                    margin-top: 20px;
+                }
                 p {
                     font-size: 12px;
                     color: #34495E;
@@ -59,27 +63,40 @@ class PdfExportPresenter extends BaseExportPresenter
 
     // Construção do conteúdo do PDF.
     $html = $css;
-    $html .= '<h1>' . htmlspecialchars($data['titulo']) . '</h1>';
-    $html .= '<div class="content">' . nl2br(htmlspecialchars($data['texto'])) . '</div>';
 
-    // Verificar se há tabelas no conteúdo e renderizá-las.
-    if (!empty($data['tabelas'])) {
-      $html .= '<table class="table-content">';
-      foreach ($data['tabelas'] as $index => $tabela) {
-        $html .= '<tr>';
-        foreach ($tabela as $key => $value) {
-          if ($index === 0) {
-            $html .= '<th>' . htmlspecialchars($key) . '</th>';
-          } else {
-            $html .= '<td>' . htmlspecialchars($value) . '</td>';
-          }
-        }
-        $html .= '</tr>';
-      }
-      $html .= '</table>';
+    // Adicionar título principal.
+    $html .= '<h1>' . htmlspecialchars($data['titulo']) . '</h1>';
+
+    // Renderizar texto principal, se disponível.
+    if (!empty($data['texto'])) {
+      $html .= '<div class="content">' . nl2br(htmlspecialchars($data['texto'])) . '</div>';
     }
 
-    // Adicionando rodapé.
+    // Renderizar subtítulos e conteúdos associados.
+    if (!empty($data['subtitulos'])) {
+      foreach ($data['subtitulos'] as $subtitle) {
+        $html .= '<h2>' . htmlspecialchars($subtitle['subtitulo']) . '</h2>';
+        $html .= '<p>' . nl2br(htmlspecialchars($subtitle['conteudo'])) . '</p>';
+      }
+    }
+
+    // Renderizar tabelas, se disponíveis.
+    if (!empty($data['tabelas'])) {
+      foreach ($data['tabelas'] as $table) {
+        $html .= '<table class="table-content">';
+        foreach ($table as $rowIndex => $row) {
+          $html .= '<tr>';
+          foreach ($row as $cell) {
+            $tag = $rowIndex === 0 ? 'th' : 'td';
+            $html .= "<$tag>" . htmlspecialchars($cell) . "</$tag>";
+          }
+          $html .= '</tr>';
+        }
+        $html .= '</table>';
+      }
+    }
+
+    // Adicionar rodapé com URL e data de exportação.
     $html .= '<footer>';
     $html .= '<div>URL: ' . htmlspecialchars($data['url']) . '</div>';
     $html .= '<div>Exportado em: ' . htmlspecialchars($data['data']) . '</div>';
