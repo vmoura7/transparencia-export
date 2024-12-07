@@ -33,7 +33,6 @@ class ExportPresenterFactory
       throw new \Exception("Formato '$format' não suportado.");
     }
 
-    // Retorna uma nova instância do presenter correspondente.
     $presenterClass = $presenters[$format];
 
     if (!is_subclass_of($presenterClass, ExportPresenterInterface::class)) {

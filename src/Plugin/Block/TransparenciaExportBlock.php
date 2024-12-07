@@ -55,10 +55,15 @@ class TransparenciaExportBlock extends BlockBase implements ContainerFactoryPlug
    */
   public function build()
   {
-    $module_path = \Drupal::service('extension.list.module')->getPath('transparencia_export_block');
+    $module_path = \Drupal::service('extension.list.module')->getPath('transparencia_export');
     $file_url_generator = \Drupal::service('file_url_generator');
 
-    $json_icon_url = $file_url_generator->generateAbsoluteString($module_path . '/images/json.svg');
+    $routeMatch = \Drupal::service('current_route_match');
+    if ($routeMatch->getRouteName() === 'system.404' || $routeMatch->getRouteName() === 'system.403') {
+      return [];
+    }
+
+    $json_icon_url = $file_url_generator->generateAbsoluteString($module_path . '/images/json-icon.svg');
     $xml_icon_url = $file_url_generator->generateAbsoluteString($module_path . '/images/xml-icon.svg');
     $pdf_icon_url = $file_url_generator->generateAbsoluteString($module_path . '/images/pdf-icon.svg');
     $print_icon_url = $file_url_generator->generateAbsoluteString($module_path . '/images/print-icon.svg');
@@ -80,9 +85,9 @@ class TransparenciaExportBlock extends BlockBase implements ContainerFactoryPlug
 
       foreach ($buttons as $format => $icon_url) {
         $rendered_buttons .= '
-      <div id="export-' . $format . '-button" class="export-button">
-        <img src="' . $icon_url . '" alt="Exportar ' . strtoupper($format) . '" height="24" width="24" />
-      </div>';
+          <div id="export-' . $format . '-button" class="export-button">
+            <img src="' . $icon_url . '" alt="Exportar ' . strtoupper($format) . '" height="24" width="24" />
+          </div>';
       }
     }
 
