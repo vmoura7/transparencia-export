@@ -9,56 +9,82 @@ class PdfExportPresenter extends BaseExportPresenter
   protected function convertToFormat(array $data): string
   {
     $css = "
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    margin: 20px;
-                    padding: 20px;
-                }
-                h1 {
-                    color:
-                    border-bottom: 2px solid
-                    padding-bottom: 10px;
-                    margin-bottom: 20px;
-                }
-                h2 {
-                    color:
-                    margin-top: 20px;
-                }
-                p {
-                    font-size: 12px;
-                    color:
-                    line-height: 1.6;
-                    text-align: justify;
-                }
-                .content {
-                    margin-bottom: 20px;
-                }
-                .table-content {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-top: 20px;
-                }
-                .table-content th, .table-content td {
-                    border: 1px solid
-                    padding: 8px;
-                    text-align: left;
-                }
-                .table-content th {
-                    background-color:
-                    font-weight: bold;
-                }
-                footer {
-                    position: fixed;
-                    bottom: 20px;
-                    left: 20px;
-                    right: 20px;
-                    text-align: center;
-                    font-size: 10px;
-                    color:
-                }
-            </style>
-        ";
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 40px;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #0047ab;
+            margin-bottom: 30px;
+        }
+        header h1 {
+            color: #0047ab;
+            font-size: 24px;
+            margin: 0;
+        }
+        header p {
+            font-size: 14px;
+            color: #666;
+            margin: 5px 0 0;
+        }
+        h2 {
+            color: #0047ab;
+            margin-top: 30px;
+            font-size: 18px;
+        }
+        p {
+            font-size: 12px;
+            color: #555;
+            line-height: 1.8;
+            text-align: justify;
+            margin: 10px 0;
+        }
+        .content {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .table-content {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .table-content th, .table-content td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .table-content th {
+            background-color: #0047ab;
+            color: #fff;
+            font-weight: bold;
+        }
+        .table-content tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #0047ab;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            font-size: 10px;
+        }
+    </style>
+    ";
+
 
     $html = $css;
 
