@@ -46,7 +46,7 @@ class TransparenciaExportBlock extends BlockBase implements ContainerFactoryPlug
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('transparencia_export.excluded_paths_repository') // Corrigido aqui
+      $container->get('transparencia_export.excluded_paths_repository')
     );
   }
 
@@ -58,24 +58,19 @@ class TransparenciaExportBlock extends BlockBase implements ContainerFactoryPlug
     $module_path = \Drupal::service('extension.list.module')->getPath('transparencia_export_block');
     $file_url_generator = \Drupal::service('file_url_generator');
 
-    // Gerar URLs para os ícones.
-    $json_icon_url = $file_url_generator->generateAbsoluteString($module_path . '/images/json-icon.svg');
+    $json_icon_url = $file_url_generator->generateAbsoluteString($module_path . '/images/json.svg');
     $xml_icon_url = $file_url_generator->generateAbsoluteString($module_path . '/images/xml-icon.svg');
     $pdf_icon_url = $file_url_generator->generateAbsoluteString($module_path . '/images/pdf-icon.svg');
     $print_icon_url = $file_url_generator->generateAbsoluteString($module_path . '/images/print-icon.svg');
 
-    // Obter a URL atual
     $current_path = \Drupal::service('path.current')->getPath();
     $current_route_name = \Drupal::service('path_alias.manager')->getAliasByPath($current_path);
 
-    // Aqui, você pode acessar os caminhos excluídos através do repositório.
     $excluded_paths = $this->excludedPathsRepository->getExcludedPaths();
 
-    // Inicializar $rendered_buttons como string vazia.
     $rendered_buttons = '';
 
     if (!in_array($current_route_name, $excluded_paths)) {
-      // Botões de exportação.
       $buttons = [
         'json' => $json_icon_url,
         'xml' => $xml_icon_url,

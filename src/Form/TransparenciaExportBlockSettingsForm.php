@@ -31,10 +31,8 @@ class TransparenciaExportBlockSettingsForm extends FormBase
 
   public function buildForm(array $form, FormStateInterface $form_state)
   {
-    // Aqui você pode usar o repositório para obter os caminhos excluídos.
     $excluded_paths = $this->excludedPathsRepository->getExcludedPaths();
 
-    // Construa o formulário como necessário.
     $form['excluded_paths'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Caminhos Excluídos'),
@@ -42,7 +40,6 @@ class TransparenciaExportBlockSettingsForm extends FormBase
       '#description' => $this->t('Caminhos a serem excluídos, um por linha.'),
     ];
 
-    // Adiciona o botão de envio
     $form['actions'] = [
       '#type' => 'actions',
     ];
@@ -57,20 +54,16 @@ class TransparenciaExportBlockSettingsForm extends FormBase
 
   public function submitForm(array &$form, FormStateInterface $form_state)
   {
-    // Obter os caminhos do campo de texto do formulário.
     $paths = array_filter(array_map('trim', explode("\n", $form_state->getValue('excluded_paths'))));
 
-    // Limpar os caminhos antigos e adicionar novos.
-    // Você pode querer limpar os caminhos atuais antes de adicionar novos.
-    $this->excludedPathsRepository->clearExcludedPaths(); // Limpa os caminhos existentes
+    $this->excludedPathsRepository->clearExcludedPaths();
 
     foreach ($paths as $path) {
       if (!$this->excludedPathsRepository->isPathExcluded($path)) {
-        $this->excludedPathsRepository->addExcludedPath($path); // Adiciona o caminho ao banco de dados
+        $this->excludedPathsRepository->addExcludedPath($path);
       }
     }
 
-    // Definir uma mensagem de sucesso.
     \Drupal::messenger()->addMessage($this->t('Os caminhos excluídos foram salvos.'));
   }
 }

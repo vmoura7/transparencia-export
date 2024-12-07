@@ -14,40 +14,40 @@ class PdfExportPresenter extends BaseExportPresenter
             font-family: 'Helvetica Neue', Arial, sans-serif;
             margin: 40px;
             padding: 0;
-            background-color: #f9f9f9;
-            color: #333;
+            background-color:
+            color:
         }
         header {
             text-align: center;
             padding-bottom: 20px;
-            border-bottom: 2px solid #0047ab;
+            border-bottom: 2px solid
             margin-bottom: 30px;
         }
         header h1 {
-            color: #0047ab;
+            color:
             font-size: 24px;
             margin: 0;
         }
         header p {
             font-size: 14px;
-            color: #666;
+            color:
             margin: 5px 0 0;
         }
         h2 {
-            color: #0047ab;
+            color:
             margin-top: 30px;
             font-size: 18px;
         }
         p {
             font-size: 12px;
-            color: #555;
+            color:
             line-height: 1.8;
             text-align: justify;
             margin: 10px 0;
         }
         .content {
-            background-color: #fff;
-            border: 1px solid #ddd;
+            background-color:
+            border: 1px solid
             padding: 20px;
             border-radius: 5px;
             margin-bottom: 30px;
@@ -59,25 +59,25 @@ class PdfExportPresenter extends BaseExportPresenter
             margin-top: 20px;
         }
         .table-content th, .table-content td {
-            border: 1px solid #ddd;
+            border: 1px solid
             padding: 10px;
             text-align: left;
         }
         .table-content th {
-            background-color: #0047ab;
-            color: #fff;
+            background-color:
+            color:
             font-weight: bold;
         }
         .table-content tr:nth-child(even) {
-            background-color: #f2f2f2;
+            background-color:
         }
         footer {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background-color: #0047ab;
-            color: #fff;
+            background-color:
+            color:
             text-align: center;
             padding: 10px;
             font-size: 10px;
@@ -85,9 +85,7 @@ class PdfExportPresenter extends BaseExportPresenter
     </style>
     ";
 
-
     $html = $css;
-
     $html .= '<h1>' . htmlspecialchars($data['titulo']) . '</h1>';
 
     if (!empty($data['texto'])) {
@@ -123,8 +121,14 @@ class PdfExportPresenter extends BaseExportPresenter
     $html .= '</footer>';
 
     $pdfGenerator = new Dompdf();
+
+    if (!empty($data['tabelas'])) {
+      $pdfGenerator->setPaper('A4', 'landscape');
+    } else {
+      $pdfGenerator->setPaper('A4', 'portrait');
+    }
+
     $pdfGenerator->loadHtml($html);
-    $pdfGenerator->setPaper('A4', 'portrait');
     $pdfGenerator->render();
 
     return $pdfGenerator->output();

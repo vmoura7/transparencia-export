@@ -1,19 +1,11 @@
 <?php
 
-/**
- * @file
- * Install, update, and uninstall functions for the Transparencia Export Block module.
- */
 
 use Drupal\Core\Database\Database;
 use Drupal\Core\File\FileSystemInterface;
 
-/**
- * Implements hook_install().
- */
 function transparencia_export_install()
 {
-  // Verifica se as dependências necessárias estão instaladas.
   $missing_dependencies = [];
 
   if (!class_exists('Symfony\Component\DomCrawler\Crawler')) {
@@ -31,23 +23,18 @@ function transparencia_export_install()
     return;
   }
 
-  // Diretório temporário do mPDF.
   $temp_dir = \Drupal::service('file_system')->getTempDirectory() . '/mpdf';
 
-  // Crie o diretório, se não existir.
   if (!file_exists($temp_dir)) {
     mkdir($temp_dir, 0755, TRUE);
   }
 
-  // Ajusta as permissões.
   chmod($temp_dir, 0755);
 
-  // Valida se o diretório está acessível.
   if (!is_writable($temp_dir)) {
     throw new \RuntimeException(t('The temporary directory for mPDF is not writable: @dir', ['@dir' => $temp_dir]));
   }
 
-  // Criação da tabela para armazenar os caminhos excluídos.
   $schema = [
     'description' => 'Stores excluded paths for the Transparência Export.',
     'fields' => [
@@ -66,15 +53,31 @@ function transparencia_export_install()
     'primary key' => ['id'],
   ];
 
-  // Executa a criação da tabela.
   \Drupal::database()->schema()->createTable('transparencia_export_excluded_paths', $schema);
+
+  $default_paths = [
+    '/',
+    '/busca',
+    '/user',
+  ];
+
+  foreach ($default_paths as $path) {
+    if (!\Drupal::database()->select('transparencia_export_excluded_paths', 'e')
+      ->fields('e', ['id'])
+      ->condition('path', $path)
+      ->execute()
+      ->fetchField()) {
+      \Drupal::database()->insert('transparencia_export_excluded_paths')
+        ->fields(['path' => $path])
+        ->execute();
+    }
+  }
 }
 
-/**
- * Implements hook_uninstall().
- */
-function transparencia_export_block_uninstall()
+function transparencia_export_uninstall()
 {
-  // Remove a tabela na desinstalação do módulo.
-  \Drupal::database()->schema()->dropTable('transparencia_export_block_excluded_paths');
+  $schema = \Drupal::database()->schema();
+  if ($schema->tableExists('transparencia_export_excluded_paths')) {
+    $schema->dropTable('transparencia_export_excluded_paths');
+  }
 }
