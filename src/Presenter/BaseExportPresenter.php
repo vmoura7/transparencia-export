@@ -10,7 +10,6 @@ abstract class BaseExportPresenter implements ExportPresenterInterface
 
   public function __construct(array $config = [])
   {
-    // Configurações padrão podem ser sobrescritas pelas passadas no construtor.
     $this->config = array_merge([
       'remove_elements' => '//header|//footer|//script|//style|//comment()',
       'block_selectors' => '#block-gavias-nonid-quicksideabout, .block-block-content',
@@ -54,17 +53,19 @@ abstract class BaseExportPresenter implements ExportPresenterInterface
 
   protected function removeUnwantedElements(Crawler $crawler): void
   {
-    // Remover elementos genéricos (configuráveis).
     $crawler->filterXpath($this->config['remove_elements'])->each(function ($node) {
       $node->getNode(0)->parentNode->removeChild($node->getNode(0));
     });
 
-    // Remover blocos específicos (configuráveis).
     $crawler->filter($this->config['block_selectors'])->each(function ($node) {
       $node->getNode(0)->parentNode->removeChild($node->getNode(0));
     });
 
-    \Drupal::logger('transparencia_export')->debug('HTML após remoção de elementos indesejados.');
+    $crawler->filter('.pager, .pagination, .views-pagination')->each(function ($node) {
+      $node->getNode(0)->parentNode->removeChild($node->getNode(0));
+    });
+
+    \Drupal::logger('transparencia_export')->debug('HTML após remoção de elementos indesejados e paginadores.');
   }
 
   protected function extractTitle(Crawler $crawler): string
@@ -85,7 +86,7 @@ abstract class BaseExportPresenter implements ExportPresenterInterface
         $rowNode->filter('th, td')->each(function ($cellNode) use (&$row, &$tableTexts) {
           $cellText = trim($cellNode->text());
           $row[] = $cellText;
-          $tableTexts[] = $cellText; // Coletar todos os textos da tabela
+          $tableTexts[] = $cellText;
         });
         $table[] = $row;
       });
@@ -105,7 +106,7 @@ abstract class BaseExportPresenter implements ExportPresenterInterface
       $text = trim($node->text());
 
       if (in_array($text, $tableTexts, true)) {
-        return; // Ignore texts already present in tables.
+        return;
       }
 
       if (preg_match('/^h[1-6]$/', $tagName)) {
@@ -132,7 +133,7 @@ abstract class BaseExportPresenter implements ExportPresenterInterface
       $mainContent = preg_replace('/\s+/', ' ', $mainContent);
     }
 
-    return $hasSubtitles ? null : $mainContent; // Only include main content if there are no subtitles.
+    return $hasSubtitles ? null : $mainContent;
   }
 
   abstract protected function convertToFormat(array $data): string;
