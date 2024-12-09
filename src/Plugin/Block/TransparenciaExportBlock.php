@@ -92,7 +92,7 @@ class TransparenciaExportBlock extends BlockBase implements ContainerFactoryPlug
     }
 
     return [
-      '#markup' => '<div class="export-json-container">' . $rendered_buttons . '</div>',
+      '#markup' => '<div class="export-container">' . $rendered_buttons . '</div>',
       '#attached' => [
         'library' => [
           'transparencia_export/export_block',
