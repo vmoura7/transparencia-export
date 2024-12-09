@@ -10,21 +10,15 @@ class XmlExportPresenter extends BaseExportPresenter
 
     $xml->addChild('titulo', htmlspecialchars($data['titulo'], ENT_XML1, 'UTF-8'));
 
-    if (!empty($data['subtitulos'])) {
-      $subtitlesXml = $xml->addChild('subtitulos');
-      foreach ($data['subtitulos'] as $subtitle) {
-        $subtitleXml = $subtitlesXml->addChild('subtitulo');
-        if (isset($subtitle['subtitulo'])) {
-          $subtitleXml->addChild('titulo', htmlspecialchars($subtitle['subtitulo'], ENT_XML1, 'UTF-8'));
-        }
-        if (isset($subtitle['conteudo'])) {
-          $subtitleXml->addChild('conteudo', htmlspecialchars($subtitle['conteudo'], ENT_XML1, 'UTF-8'));
-        }
+    if (!empty($data['secoes'])) {
+      $secaosXml = $xml->addChild('secoes');
+      foreach ($data['secoes'] as $secao) {
+        $secaoXml = $secaosXml->addChild('secao');
+        $secaoXml->addChild('id', htmlspecialchars($secao['id'], ENT_XML1, 'UTF-8'));
+        $secaoXml->addChild('slug', htmlspecialchars($secao['slug'], ENT_XML1, 'UTF-8'));
+        $secaoXml->addChild('titulo', htmlspecialchars($secao['titulo'], ENT_XML1, 'UTF-8'));
+        $secaoXml->addChild('conteudo', htmlspecialchars($secao['conteudo'], ENT_XML1, 'UTF-8'));
       }
-    }
-
-    if (isset($data['texto']) && empty($data['subtitulos'])) {
-      $xml->addChild('texto', htmlspecialchars($data['texto'], ENT_XML1, 'UTF-8'));
     }
 
     if (!empty($data['tabelas'])) {
@@ -38,6 +32,10 @@ class XmlExportPresenter extends BaseExportPresenter
           }
         }
       }
+    }
+
+    if (!empty($data['versao'])) {
+      $xml->addChild('versao', htmlspecialchars((string)$data['versao'], ENT_XML1, 'UTF-8'));
     }
 
     if (!empty($data['url'])) {

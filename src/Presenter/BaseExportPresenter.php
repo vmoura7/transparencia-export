@@ -45,10 +45,51 @@ abstract class BaseExportPresenter implements ExportPresenterInterface
 
     return [
       'titulo' => $title,
-      'texto' => $mainContent,
-      'subtitulos' => $subtitlesAndContents,
+      'secoes' => $this->structureSections($subtitlesAndContents),
       'tabelas' => $tables['data'] ?? null,
+      'versao' => time(),
     ];
+  }
+
+
+  protected function structureSections(array $subtitlesAndContents): array
+  {
+    $sectionCounter = 1;
+    return array_map(function ($section) use (&$sectionCounter) {
+      return [
+        'id' => 'secao_' . $sectionCounter++,
+        'slug' => $this->createSlug($section['subtitulo']),
+        'titulo' => $section['subtitulo'],
+        'conteudo' => $section['conteudo']
+      ];
+    }, $subtitlesAndContents);
+  }
+
+  protected function createSlug(string $text): string
+  {
+    $slug = iconv('UTF-8', 'ASCII//TRANSLIT', $text);
+    $slug = preg_replace('/[^a-zA-Z0-9\s]/', '', $slug);
+    return strtolower(str_replace(' ', '-', trim($slug)));
+  }
+
+  protected function extractSummary(Crawler $crawler): ?string
+  {
+    $paragraphs = $crawler->filter('p');
+    $summary = '';
+    $paragraphs->slice(0, 2)->each(function ($paragraph) use (&$summary) {
+      $summary .= $paragraph->text() . ' ';
+    });
+    return trim($summary) ?: null;
+  }
+
+  protected function extractKeywords(Crawler $crawler): array
+  {
+    $text = $crawler->text();
+    $words = preg_split('/\s+/', $text);
+    $words = array_filter($words, function ($word) {
+      return strlen($word) > 3;
+    });
+    return array_slice(array_unique($words), 0, 10);
   }
 
   protected function removeUnwantedElements(Crawler $crawler): void

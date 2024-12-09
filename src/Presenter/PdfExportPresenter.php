@@ -61,7 +61,6 @@ class PdfExportPresenter extends BaseExportPresenter
               margin: 5px 0 0;
           }
           .content {
-              background-color: #ffffff;
               border: 1px solid #e0e0e0;
               padding: 20px;
               border-radius: 5px;
@@ -129,17 +128,15 @@ class PdfExportPresenter extends BaseExportPresenter
 
     $html .= '<h1>' . htmlspecialchars($data['titulo']) . '</h1>';
 
-    if (!empty($data['texto'])) {
-      $html .= '<div class="content">' . nl2br(htmlspecialchars($data['texto'])) . '</div>';
-    }
-
-    if (!empty($data['subtitulos'])) {
-      foreach ($data['subtitulos'] as $subtitle) {
-        $html .= '<h2>' . htmlspecialchars($subtitle['subtitulo']) . '</h2>';
-        $html .= '<p>' . nl2br(htmlspecialchars($subtitle['conteudo'])) . '</p>';
+    // Seções
+    if (!empty($data['secoes'])) {
+      foreach ($data['secoes'] as $secao) {
+        $html .= '<h2>' . htmlspecialchars($secao['titulo']) . '</h2>';
+        $html .= '<p>' . nl2br(htmlspecialchars($secao['conteudo'])) . '</p>';
       }
     }
 
+    // Tabelas
     if (!empty($data['tabelas'])) {
       foreach ($data['tabelas'] as $table) {
         $html .= '<table class="table-content">';
@@ -156,6 +153,7 @@ class PdfExportPresenter extends BaseExportPresenter
     }
 
     $html .= '<footer>';
+    $html .= '<div>Versão: ' . htmlspecialchars((string)$data['versao']) . '</div>';
     $html .= '<div>URL: ' . htmlspecialchars($data['url']) . '</div>';
     $html .= '<div>Exportado em: ' . htmlspecialchars($data['data']) . '</div>';
     $html .= '<div>&copy; ' . date('Y') . ' Portal da Transparência. Todos os direitos reservados.</div>';
