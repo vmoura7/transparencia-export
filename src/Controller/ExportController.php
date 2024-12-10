@@ -87,7 +87,7 @@ class ExportController extends ControllerBase
         $request->getSchemeAndHttpHost() . '/' . ltrim($destination, '/') :
         $referer;
 
-      $this->loggerFactory->get('transparencia_export')->info('URL determinada para captura: @url', ['@url' => $current_url]);
+      // $this->loggerFactory->get('transparencia_export')->info('URL determinada para captura: @url', ['@url' => $current_url]);
 
       if (!$current_url) {
         throw new \Exception('Não foi possível determinar a URL da página para capturar o HTML.');

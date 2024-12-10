@@ -37,6 +37,9 @@ abstract class BaseExportPresenter implements ExportPresenterInterface
     $crawler = new Crawler($html);
     $this->removeUnwantedElements($crawler);
 
+    // $filteredHtml = $crawler->html();
+    // \Drupal::logger('transparencia_export')->debug('HTML filtrado: {html}', ['html' => $filteredHtml]);
+
     $title = $this->extractTitle($crawler);
     $tables = $this->extractTables($crawler);
     $subtitlesAndContents = $this->extractSubtitlesAndContents($crawler, $tables['texts']);
