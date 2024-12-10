@@ -26,7 +26,6 @@ abstract class BaseExportPresenter implements ExportPresenterInterface
   public function format($data, ?string $currentUrl = null): string
   {
     $cleanHtml = $this->processHtml($data);
-
     $cleanHtml['url'] = $currentUrl ?? 'URL não definida';
     $cleanHtml['data'] = date('d-m-Y H:i:s');
 
@@ -55,14 +54,19 @@ abstract class BaseExportPresenter implements ExportPresenterInterface
   protected function structureSections(array $subtitlesAndContents): array
   {
     $sectionCounter = 1;
-    return array_map(function ($section) use (&$sectionCounter) {
+    $sections = array_map(function ($section) use (&$sectionCounter) {
       return [
-        'id' => 'secao_' . $sectionCounter++,
+        'id' => 'secao_' . $sectionCounter,
         'slug' => $this->createSlug($section['subtitulo']),
         'titulo' => $section['subtitulo'],
         'conteudo' => $section['conteudo']
       ];
     }, $subtitlesAndContents);
+
+    return array_combine(
+      array_map(fn($i) => $i, range(1, count($sections))),
+      $sections
+    );
   }
 
   protected function createSlug(string $text): string
