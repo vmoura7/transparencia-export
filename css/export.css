@@ -1,43 +1,21 @@
 .export-container {
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 10px;
-  margin-top: 20px;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 0;
+  margin-top: 30px;
 }
 
 .export-button {
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
 }
 
 .export-button img {
-  display: inline-block;
+  transition: transform 0.2s;
   width: 32px;
   height: 32px;
 }
 
-@media (max-width: 1200px) {
-  .export-container {
-    max-width: 1200px;
-  }
-}
-@media (max-width: 992px) {
-  .export-container {
-    max-width: 992px;
-  }
-}
-@media (max-width: 768px) {
-  .export-container {
-    max-width: 768px;
-  }
-}
-@media (max-width: 576px) {
-  .export-container {
-    max-width: 540px;
-  }
+.export-button:hover img {
+  transform: scale(1.1);
 }
