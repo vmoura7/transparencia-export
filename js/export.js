@@ -19,7 +19,7 @@
         });
       });
 
-      once('print-page', '#print-button', context).forEach((element) => {
+      once('print-page', '#export-print-button', context).forEach((element) => {
         $(element).on('click', function () {
           window.print();
         });

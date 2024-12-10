@@ -105,8 +105,6 @@ abstract class BaseExportPresenter implements ExportPresenterInterface
     $crawler->filter('.pager, .pagination, .views-pagination')->each(function ($node) {
       $node->getNode(0)->parentNode->removeChild($node->getNode(0));
     });
-
-    \Drupal::logger('transparencia_export')->debug('HTML após remoção de elementos indesejados e paginadores.');
   }
 
   protected function extractTitle(Crawler $crawler): string
