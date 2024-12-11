@@ -86,7 +86,7 @@ class TransparenciaExportBlock extends BlockBase implements ContainerFactoryPlug
       foreach ($buttons as $format => $icon_url) {
         $rendered_buttons .= '
           <div id="export-' . $format . '-button" class="export-button">
-            <img src="' . $icon_url . '" alt="Exportar ' . strtoupper($format) . '" height="24" width="24" />
+            <img src="' . $icon_url . '" alt="Exportar ' . strtoupper($format) . '" title="' . strtoupper($format) . '" height="24" width="24" />
           </div>';
       }
     }
