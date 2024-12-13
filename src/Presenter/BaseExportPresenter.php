@@ -37,8 +37,8 @@ abstract class BaseExportPresenter implements ExportPresenterInterface
     $crawler = new Crawler($html);
     $this->removeUnwantedElements($crawler);
 
-    // $filteredHtml = $crawler->html();
-    // \Drupal::logger('transparencia_export')->debug('HTML filtrado: {html}', ['html' => $filteredHtml]);
+    $filteredHtml = $crawler->html();
+    \Drupal::logger('transparencia_export')->debug('HTML filtrado: {html}', ['html' => $filteredHtml]);
 
     $title = $this->extractTitle($crawler);
     $tables = $this->extractTables($crawler);
@@ -56,21 +56,31 @@ abstract class BaseExportPresenter implements ExportPresenterInterface
 
   protected function structureSections(array $subtitlesAndContents): array
   {
+    $sections = [];
     $sectionCounter = 1;
-    $sections = array_map(function ($section) use (&$sectionCounter) {
-      return [
-        'id' => 'secao_' . $sectionCounter,
-        'slug' => $this->createSlug($section['subtitulo']),
-        'titulo' => $section['subtitulo'],
-        'conteudo' => $section['conteudo']
-      ];
-    }, $subtitlesAndContents);
 
-    return array_combine(
-      array_map(fn($i) => $i, range(1, count($sections))),
-      $sections
-    );
+    foreach ($subtitlesAndContents as $index => $section) {
+      if (empty(trim($section['conteudo']))) {
+        continue;
+      }
+
+      if (!empty($section['subtitulo'])) {
+        $sections[] = [
+          'id' => 'secao_' . $sectionCounter,
+          'slug' => $this->createSlug($section['subtitulo']),
+          'titulo' => $section['subtitulo'],
+          'conteudo' => $section['conteudo']
+        ];
+        $sectionCounter++;
+      } elseif ($index > 0 && !empty($sections)) {
+        $lastIndex = count($sections) - 1;
+        $sections[$lastIndex]['conteudo'] .= ' ' . $section['conteudo'];
+      }
+    }
+
+    return $sections;
   }
+
 
   protected function createSlug(string $text): string
   {
